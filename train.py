@@ -57,6 +57,10 @@ def main(args):
         writer.add_text("args", str(args))
         writer.add_text("ts", ts)
 
+    if args.file_logging:
+        log_file = open(os.path.join(args.logdir, expierment_name(args,ts)+"_logfile.txt"), "w")
+
+
     save_model_path = os.path.join(args.save_model_path, ts)
     os.makedirs(save_model_path)
 
@@ -143,6 +147,9 @@ def main(args):
                 if iteration % args.print_every == 0 or iteration+1 == len(data_loader):
                     print("%s Batch %04d/%i, Loss %9.4f, NLL-Loss %9.4f, KL-Loss %9.4f, KL-Weight %6.3f"
                         %(split.upper(), iteration, len(data_loader)-1, loss.data[0], NLL_loss.data[0]/batch_size, KL_loss.data[0]/batch_size, KL_weight))
+                    if args.file_logging:
+                        log_file.write("%s Batch %04d/%i, Loss %9.4f, NLL-Loss %9.4f, KL-Loss %9.4f, KL-Weight %6.3f \n"
+                            %(split.upper(), iteration, len(data_loader)-1, loss.data[0], NLL_loss.data[0]/batch_size, KL_loss.data[0]/batch_size, KL_weight))
 
                 if split == 'valid':
                     if 'target_sents' not in tracker:
@@ -151,6 +158,9 @@ def main(args):
                     tracker['z'] = torch.cat((tracker['z'], z.data), dim=0)
 
             print("%s Epoch %02d/%i, Mean ELBO %9.4f"%(split.upper(), epoch, args.epochs, torch.mean(tracker['ELBO'])))
+
+            if args.file_logging:
+                log_file.write("%s Epoch %02d/%i, Mean ELBO %9.4f \n" %(split.upper(), epoch, args.epochs, torch.mean(tracker['ELBO'])))
 
             if args.tensorboard_logging:
                 writer.add_scalar("%s-Epoch/ELBO"%split.upper(), torch.mean(tracker['ELBO']), epoch)
@@ -169,6 +179,7 @@ def main(args):
                 torch.save(model.state_dict(), checkpoint_path)
                 print("Model saved at %s"%checkpoint_path)
 
+    log_file.close()
 
 if __name__ == '__main__':
 
@@ -199,6 +210,7 @@ if __name__ == '__main__':
 
     parser.add_argument('-v','--print_every', type=int, default=50)
     parser.add_argument('-tb','--tensorboard_logging', action='store_true')
+    parser.add_argument('-fl', '--file_logging', action='store_true')
     parser.add_argument('-log','--logdir', type=str, default='logs')
     parser.add_argument('-bin','--save_model_path', type=str, default='bin')
 
