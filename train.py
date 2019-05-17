@@ -178,8 +178,8 @@ def main(args):
                 checkpoint_path = os.path.join(save_model_path, "E%i.pytorch"%(epoch))
                 torch.save(model.state_dict(), checkpoint_path)
                 print("Model saved at %s"%checkpoint_path)
-
-    log_file.close()
+    if args.file_logging:
+        log_file.close()
 
 if __name__ == '__main__':
 
