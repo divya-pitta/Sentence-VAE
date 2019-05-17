@@ -145,6 +145,9 @@ class SentenceVAE(nn.Module):
             if t == 0:
                 input_sequence = to_var(torch.Tensor(batch_size).fill_(self.sos_idx).long())
 
+            if len(running_seqs) == 1 and len(input_sequence.size()) == 0:
+                input_sequence = input_sequence.unsqueeze(0)
+
             input_sequence = input_sequence.unsqueeze(1)
 
             input_embedding = self.embedding(input_sequence)
@@ -168,8 +171,14 @@ class SentenceVAE(nn.Module):
 
             # prune input and hidden state according to local update
             if len(running_seqs) > 0:
-                input_sequence = input_sequence[running_seqs]
-                hidden = hidden[:, running_seqs]
+                if len(running_seqs) > 0:
+                    if len(running_seqs) == 1 and len(input_sequence.size()) == 0:
+                        pass
+                    else:
+                        input_sequence = input_sequence[running_seqs]
+                        hidden = hidden[:, running_seqs]
+                # input_sequence = input_sequence[running_seqs]
+                # hidden = hidden[:, running_seqs]
 
                 running_seqs = torch.arange(0, len(running_seqs), out=self.tensor()).long()
 
