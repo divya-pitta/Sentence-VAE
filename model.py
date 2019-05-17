@@ -77,7 +77,7 @@ class SentenceVAE(nn.Module):
         # DECODER
         hidden = self.latent2hidden(z)
 
-        if self.bidirectional and self.num_layers > 1:
+        if self.bidirectional or self.num_layers > 1:
             # unflatten hidden state
             hidden = hidden.view(self.hidden_factor, batch_size, self.hidden_size)
         else:
@@ -127,8 +127,8 @@ class SentenceVAE(nn.Module):
         if self.bidirectional or self.num_layers > 1:
             # unflatten hidden state
             hidden = hidden.view(self.hidden_factor, batch_size, self.hidden_size)
-
-        hidden = hidden.unsqueeze(0)
+        else:
+            hidden = hidden.unsqueeze(0)
 
         # required for dynamic stopping of sentence generation
         sequence_idx = torch.arange(0, batch_size, out=self.tensor()).long() # all idx of batch
