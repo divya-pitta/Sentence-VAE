@@ -48,6 +48,17 @@ def main(args):
 
     if torch.cuda.is_available():
         model = model.cuda()
+        tensor = torch.cuda.FloatTensor 
+    else:
+        tensor = torch.Tensor
+
+    if args.load_checkpoint != 'None':
+        if not os.path.exists(args.load_checkpoint):
+            raise FileNotFoundError(args.load_checkpoint)
+        model.load_state_dict(torch.load(args.load_checkpoint))
+
+
+    latent_vector = defaultdict(tensor)
 
     print(model)
 
@@ -123,6 +134,9 @@ def main(args):
                 # Forward pass
                 logp, mean, logv, z = model(batch['input'], batch['length'])
 
+                if split!='train':
+                    latent_vector['latent'] = torch.cat((latent_vector['latent'], z.data))
+
                 # loss calculation
                 NLL_loss, KL_loss, KL_weight = loss_fn(logp, batch['target'],
                     batch['length'], mean, logv, args.anneal_function, step, args.k, args.x0)
@@ -183,6 +197,9 @@ def main(args):
                 checkpoint_path = os.path.join(save_model_path, "E%i.pytorch"%(epoch))
                 torch.save(model.state_dict(), checkpoint_path)
                 print("Model saved at %s"%checkpoint_path)
+
+        torch.save(latent_vector['latent'], '.latent_vector_{}.pt'.format(epoch))
+
     if args.file_logging:
         log_file.close()
 
@@ -218,6 +235,8 @@ if __name__ == '__main__':
     parser.add_argument('-fl', '--file_logging', action='store_true')
     parser.add_argument('-log','--logdir', type=str, default='logs')
     parser.add_argument('-bin','--save_model_path', type=str, default='bin')
+
+    parser.add_argument('-c', '--load_checkpoint', type=str, default='None')
 
     args = parser.parse_args()
 
