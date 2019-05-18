@@ -76,7 +76,7 @@ class PTB(Dataset):
 
     def _load_data(self, vocab=True):
 
-        with open(os.path.join(self.data_dir, self.data_file), 'r') as file:
+        with open(os.path.join(self.data_dir, self.data_file), 'r', encoding="utf-8") as file:
             self.data = json.load(file)
         if vocab:
             with open(os.path.join(self.data_dir, self.vocab_file), 'r', encoding="utf-8") as file:
@@ -84,7 +84,7 @@ class PTB(Dataset):
             self.w2i, self.i2w = vocab['w2i'], vocab['i2w']
 
     def _load_vocab(self):
-        with open(os.path.join(self.data_dir, self.vocab_file), 'r') as vocab_file:
+        with open(os.path.join(self.data_dir, self.vocab_file), 'r', encoding='utf-8') as vocab_file:
             vocab = json.load(vocab_file)
 
         self.w2i, self.i2w = vocab['w2i'], vocab['i2w']
@@ -99,7 +99,7 @@ class PTB(Dataset):
         tokenizer = TweetTokenizer(preserve_case=False)
 
         data = defaultdict(dict)
-        with open(self.raw_data_path, 'r') as file:
+        with open(self.raw_data_path, 'r', encoding='utf-8') as file:
 
             for i, line in enumerate(file):
 
@@ -146,7 +146,7 @@ class PTB(Dataset):
             i2w[len(w2i)] = st
             w2i[st] = len(w2i)
 
-        with open(self.raw_data_path, 'r') as file:
+        with open(self.raw_data_path, 'r', encoding='utf-8') as file:
 
             for i, line in enumerate(file):
                 words = tokenizer.tokenize(line)
